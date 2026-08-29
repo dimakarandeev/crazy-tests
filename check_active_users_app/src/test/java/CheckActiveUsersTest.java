@@ -1,3 +1,4 @@
+import helpers.DataGenerator;
 import helpers.DateUtils;
 import org.junit.jupiter.api.Test;
 
@@ -6,88 +7,103 @@ import java.util.Map;
 
 public class CheckActiveUsersTest {
 
-    String dateAlice = DateUtils.getYyyy_Dd_MmDate(DateUtils.today().minusDays(10));
-    String dateBob = DateUtils.getYyyy_Dd_MmDate(DateUtils.today().minusDays(11));
-
     @Test
     public void shouldIncludeActiveNonBannedUsers() throws Exception {
+        List<String> user = DataGenerator.generateUsernames(2);
+        String dateUserOne = DateUtils.getYyyy_Dd_MmDate(DataGenerator.recentDate());
+        String dateUserTwo = DateUtils.getYyyy_Dd_MmDate(DataGenerator.recentDate());
+
         new TestScenario()
                 .given()
-                .withUsersFile("alice", "bob")
+                .withUsersFile(user.get(0), user.get(1))
                 .withLoginsFile(Map.of(
-                        "alice", dateAlice,
-                        "bob", dateBob))
+                        user.get(0), dateUserOne,
+                        user.get(1), dateUserTwo))
                 .withBannedFile(List.of())
                 .when()
                 .executeScript()
                 .then()
-                .containsActiveUser("alice", dateAlice)
-                .containsActiveUser("bob", dateBob);
+                .containsActiveUser(user.get(0), dateUserOne)
+                .containsActiveUser(user.get(1), dateUserTwo);
     }
 
     @Test
     public void shouldExcludeBannedUsers() throws Exception {
+        List<String> user = DataGenerator.generateUsernames(2);
+        String dateUserOne = DateUtils.getYyyy_Dd_MmDate(DataGenerator.recentDate());
+        String dateUserTwo = DateUtils.getYyyy_Dd_MmDate(DataGenerator.recentDate());
+
         new TestScenario()
                 .given()
-                .withUsersFile("alice", "bob")
+                .withUsersFile(user.get(0), user.get(1))
                 .withLoginsFile(Map.of(
-                        "alice", dateAlice,
-                        "bob", dateBob))
-                .withBannedFile(List.of("bob"))
+                        user.get(0), dateUserOne,
+                        user.get(1), dateUserTwo))
+                .withBannedFile(List.of(user.get(1)))
                 .when()
                 .executeScript()
                 .then()
-                .containsActiveUser("alice", dateAlice);
+                .containsActiveUser(user.get(0), dateUserTwo);
     }
 
     @Test
     public void shouldExcludeBannedUsersEvenWithRecentLogin() throws Exception {
-        String dateBob = DateUtils.getYyyy_Dd_MmDate(DateUtils.today().minusDays(31));
+        List<String> user = DataGenerator.generateUsernames(2);
+        String dateUserOne = DateUtils.getYyyy_Dd_MmDate(DataGenerator.recentDate());
+        String dateUserTwo = DateUtils.getYyyy_Dd_MmDate(DataGenerator.oldDate());
 
         new TestScenario()
                 .given()
-                .withUsersFile("alice", "bob")
+                .withUsersFile(user.get(0), user.get(1))
                 .withLoginsFile(Map.of(
-                        "alice", dateAlice,
-                        "bob", dateBob))
-                .withBannedFile(List.of("bob"))
+                        user.get(0), dateUserOne,
+                        user.get(1), dateUserTwo))
+                .withBannedFile(List.of(user.get(1)))
                 .when()
                 .executeScript()
                 .then()
-                .containsActiveUser("alice", dateAlice)
-                .doesNotContainActiveUser("bob");
+                .containsActiveUser(user.get(0), dateUserOne)
+                .doesNotContainActiveUser(user.get(1));
     }
 
     @Test
     public void shouldHandleMissingLoginInLoginsFile() throws Exception {
+        List<String> user = DataGenerator.generateUsernames(3);
+        String dateUserOne = DateUtils.getYyyy_Dd_MmDate(DataGenerator.recentDate());
+        String dateUserTwo = DateUtils.getYyyy_Dd_MmDate(DataGenerator.recentDate());
+
         new TestScenario()
                 .given()
-                .withUsersFile("alice", "bob", "carol")
+                .withUsersFile(user.get(0), user.get(1), user.get(2))
                 .withLoginsFile(Map.of(
-                        "alice", dateAlice,
-                        "bob", dateBob))
+                        user.get(0), dateUserOne,
+                        user.get(1), dateUserTwo))
                 .withBannedFile(List.of())
                 .when()
                 .executeScript()
                 .then()
-                .containsActiveUser("alice", dateAlice)
-                .containsActiveUser("bob", dateBob)
-                .doesNotContainActiveUser("carol");
+                .containsActiveUser(user.get(0), dateUserOne)
+                .containsActiveUser(user.get(1), dateUserTwo)
+                .doesNotContainActiveUser(user.get(2));
     }
 
     @Test
     public void shouldHandleEmptyUsersFile() throws Exception {
+        List<String> user = DataGenerator.generateUsernames(3);
+        String dateUserOne = DateUtils.getYyyy_Dd_MmDate(DataGenerator.recentDate());
+        String dateUserTwo = DateUtils.getYyyy_Dd_MmDate(DataGenerator.recentDate());
+
         new TestScenario()
                 .given()
-                .withUsersFile("alice", "bob")
+                .withUsersFile(user.get(0), user.get(1))
                 .withLoginsFile(Map.of(
-                        "alice", dateAlice,
-                        "bob", dateBob))
+                        user.get(0), dateUserOne,
+                        user.get(1), dateUserTwo))
                 .withBannedFile(List.of())
                 .when()
                 .executeScript("users1.txt", "logins1.csv", "test1.txt")
                 .then()
-                .doesNotContainActiveUser("alice")
-                .doesNotContainActiveUser("bob");
+                .doesNotContainActiveUser(user.get(0))
+                .doesNotContainActiveUser(user.get(1));
     }
 }

@@ -9,7 +9,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class DataGenerator {
 
@@ -93,6 +97,26 @@ public class DataGenerator {
     public void createBannedFile(List<String> bannedUsers) throws IOException {
         String json = new ObjectMapper().writeValueAsString(bannedUsers);
         Files.write(Path.of(FILE_PATH_BANNED), json.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public static String randomUsername() {
+        return "user_" + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+    }
+
+    public static List<String> generateUsernames(int count) {
+        return IntStream.range(0, count)
+                .mapToObj(i -> randomUsername())
+                .collect(Collectors.toList());
+    }
+
+    public static LocalDate recentDate() {
+        int daysAgo = ThreadLocalRandom.current().nextInt(1, 30);
+        return LocalDate.now().minusDays(daysAgo);
+    }
+
+    public static LocalDate oldDate() {
+        int daysAgo = ThreadLocalRandom.current().nextInt(31, 365);
+        return LocalDate.now().minusDays(daysAgo);
     }
 
     public void createInvalidBannedFile() throws IOException {

@@ -12,6 +12,9 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class DataGenerator {
 
@@ -100,6 +103,32 @@ public class DataGenerator {
     public void createInvalidBannedFile() throws IOException {
         Path path = Paths.get("script/data/banned.json");
         Files.write(path, "{invalid}".getBytes());
+    }
+
+    public static String randomUsername() {
+        return "user_" + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+    }
+
+    public static List<String> generateUsernames(int count) {
+        return IntStream.range(0, count)
+                .mapToObj(i -> randomUsername())
+                .collect(Collectors.toList());
+    }
+
+    public static String generateFullName() {
+        String[] firstNames = {"John", "Jane", "Max", "Anna", "Tom", "Sara"};
+        String[] lastNames = {"Smith", "Johnson", "Williams", "Brown", "Jones"};
+
+        String firstName = firstNames[(int) (Math.random() * firstNames.length)];
+        String lastName = lastNames[(int) (Math.random() * lastNames.length)];
+
+        return firstName + " " + lastName;
+    }
+
+    public static String generateEmail(String login) {
+        String[] domains = {"example.com", "test.org", "mail.net"};
+        String domain = domains[(int) (Math.random() * domains.length)];
+        return login + "@" + domain;
     }
 
     public void createUsersJsonFile(Map<String, String> loginToName) throws IOException {
